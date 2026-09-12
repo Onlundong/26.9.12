@@ -2,33 +2,13 @@
 
 import { useState, type FormEvent } from "react";
 
-const DEPARTMENTS = [
-  "프로덕트",
-  "마케팅",
-  "세일즈",
-  "컨설팅",
-  "개발",
-  "디자인",
-  "경영지원",
-  "기타",
-];
-
-const POSITIONS = ["사원", "대리", "과장", "차장", "부장", "임원"];
-
-const AI_EXPERIENCE_LEVELS = [
-  "처음이에요",
-  "ChatGPT 정도 써봤어요",
-  "Claude도 써봤어요",
-  "Claude Code까지 써봤어요",
-];
-
-const LEARNING_GOALS = [
-  "업무 자동화",
-  "데이터 분석",
-  "웹서비스 만들기",
-  "AI 도구 전반",
-  "기타",
-];
+import {
+  AI_EXPERIENCE_LEVELS,
+  DEPARTMENTS,
+  LEARNING_GOALS,
+  POSITIONS,
+} from "@/lib/constants";
+import { supabase } from "@/lib/supabase";
 
 type FormState = {
   name: string;
@@ -63,6 +43,8 @@ export default function SignupForm() {
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   function updateField<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -102,14 +84,34 @@ export default function SignupForm() {
     return Object.keys(nextErrors).length === 0;
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!validate()) {
       return;
     }
 
-    // TODO: Supabase 등 실제 저장소 연동은 추후 별도 작업으로 진행 예정
+    setSubmitting(true);
+    setSubmitError(null);
+
+    const { error } = await supabase.from("registrations").insert({
+      name: form.name.trim(),
+      email: form.email.trim(),
+      department: form.department,
+      position: form.position,
+      ai_experience: form.aiExperience,
+      learning_goal: form.learningGoal,
+      dietary: form.dietary.trim() || null,
+    });
+
+    setSubmitting(false);
+
+    if (error) {
+      console.error("신청 저장 실패:", error);
+      setSubmitError("신청 저장에 실패했습니다. 잠시 후 다시 시도해주세요.");
+      return;
+    }
+
     setSubmitted(true);
   }
 
@@ -264,11 +266,18 @@ export default function SignupForm() {
         />
       </div>
 
+      {submitError && (
+        <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">
+          {submitError}
+        </p>
+      )}
+
       <button
         type="submit"
-        className="w-full rounded-lg bg-indigo-600 px-4 py-3 text-base font-semibold text-white transition hover:bg-indigo-700"
+        disabled={submitting}
+        className="w-full rounded-lg bg-indigo-600 px-4 py-3 text-base font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-indigo-300"
       >
-        신청하기
+        {submitting ? "신청 중..." : "신청하기"}
       </button>
     </form>
   );
