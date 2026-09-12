@@ -93,6 +93,7 @@ export function DepartmentDonut({ slices }: { slices: Slice[] }) {
                 data={slices}
                 dataKey="count"
                 nameKey="label"
+                isAnimationActive={false}
                 innerRadius={62}
                 outerRadius={96}
                 stroke={SURFACE}
@@ -130,6 +131,7 @@ export function LearningGoalPie({ slices }: { slices: Slice[] }) {
                 data={slices}
                 dataKey="count"
                 nameKey="label"
+                isAnimationActive={false}
                 outerRadius={96}
                 stroke={SURFACE}
                 strokeWidth={2}
@@ -185,7 +187,13 @@ export function AiExperienceBar({ slices }: { slices: Slice[] }) {
             contentStyle={tooltipStyle}
             formatter={(value) => [`${value}명`, "신청"]}
           />
-          <Bar dataKey="count" fill={SERIES_1} radius={[0, 4, 4, 0]} maxBarSize={18} />
+          <Bar
+            dataKey="count"
+            fill={SERIES_1}
+            radius={[0, 4, 4, 0]}
+            maxBarSize={18}
+            isAnimationActive={false}
+          />
         </BarChart>
       </ResponsiveContainer>
     </ChartCard>
@@ -219,6 +227,7 @@ export function DailyTrendLine({ points }: { points: DailyPoint[] }) {
             formatter={(value) => [`${value}명`, "신청"]}
           />
           <Line
+            isAnimationActive={false}
             type="monotone"
             dataKey="count"
             stroke={SERIES_1}
